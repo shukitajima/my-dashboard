@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>マイダッシュボード</title>
+  <style>
+    :root {
+      --bg:          #f2f5f0;
+      --surface:     #fdfcfa;
+      --surface2:    #eaefe6;
+      --border:      #c8d4c2;
+      --accent:      #4d8c6a;
+      --accent-dim:  #3a6e52;
+      --text:        #2e3c2a;
+      --text-bright: #1a2a16;
+      --text-muted:  #7a9070;
+      --success:     #3d8a52;
+      --danger:      #a85c50;
+      --warning:     #9a7830;
+      --purple:      #7868a8;
+      --purple-dim:  #5a4e8a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 14px 12px 32px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 16px; }
+    .header h1 { font-size: 20px; font-weight: 600; color: var(--text-bright); letter-spacing: 0.5px; }
+    .header .datetime { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 11px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+    }
+
+    /* ── Setup Banner ── */
+    .setup-banner {
+      background: #fdf6e3; border: 1px solid var(--warning);
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+      font-size: 13px; color: #7a5a18; line-height: 1.6;
+    }
+    .setup-banner code {
+      font-family: monospace; background: rgba(255,255,255,0.1);
+      padding: 1px 4px; border-radius: 3px;
+    }
+
+    /* ── Loading / Error ── */
+    .loading, .error-msg { text-align: center; padding: 16px; font-size: 13px; }
+    .loading { color: var(--text-muted); }
+    .error-msg { color: var(--danger); }
+
+    /* ── Weather ── */
+    .weather-main { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+    .weather-temp { font-size: 54px; font-weight: 300; color: var(--text-bright); line-height: 1; }
+    .weather-temp sup { font-size: 22px; vertical-align: top; margin-top: 10px; }
+    .weather-desc { font-size: 16px; color: var(--text); margin-top: 4px; }
+    .weather-feels { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .weather-icon { font-size: 64px; line-height: 1; }
+
+    .weather-details {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      padding-top: 12px; border-top: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .wd-item { text-align: center; }
+    .wd-label { font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+    .wd-value { font-size: 14px; font-weight: 600; color: var(--text-bright); }
+
+    .forecast { display: flex; gap: 6px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .fc-day { flex: 1; text-align: center; background: var(--surface2); border-radius: 12px; padding: 8px 4px; }
+    .fc-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .fc-icon  { font-size: 22px; margin-bottom: 4px; }
+    .fc-temps { font-size: 12px; }
+    .fc-high  { color: var(--warning); font-weight: 600; }
+    .fc-low   { color: var(--accent); }
+
+    /* ── Train Status ── */
+    .train-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .train-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2); border-radius: 12px; padding: 10px 14px;
+    }
+    .train-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .train-name { font-size: 14px; font-weight: 600; color: var(--text-bright); flex: 1; }
+    .train-status-text { font-size: 12px; font-weight: 500; text-align: right; }
+    .train-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 8px; border-top: 1px solid var(--border);
+    }
+    .train-updated { font-size: 11px; color: var(--text-muted); }
+    .train-toggle {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 4px; margin: 4px 0;
+      font-size: 12px; color: var(--text-muted);
+      cursor: pointer; user-select: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .train-toggle:active { opacity: 0.6; }
+    .train-toggle-arrow { font-size: 10px; }
+    .train-optional { flex-direction: column; gap: 8px; margin-bottom: 8px; }
+
+    /* ── Haircut Tracker ── */
+    .tracker { background: var(--surface2); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .tracker:last-of-type { margin-bottom: 0; }
+
+    .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .tracker-label  { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .tracker-cycle  { font-size: 11px; color: var(--text-muted); background: var(--surface); padding: 2px 7px; border-radius: 10px; }
+
+    .tracker-body   { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+    .tracker-days   { font-size: 44px; font-weight: 300; color: var(--text-bright); line-height: 1; }
+    .tracker-days span { font-size: 16px; color: var(--text-muted); }
+    .tracker-last   { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .tracker-right  { text-align: right; }
+    .tracker-remaining { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .tracker-next   { font-size: 11px; color: var(--text-muted); }
+
+    .progress-bar   { height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
+    .progress-fill  { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+    .progress-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
+
+    .tracker-actions { display: flex; gap: 6px; align-items: center; padding-top: 10px; border-top: 1px solid var(--border); }
+
+    /* ── Subscriptions ── */
+    .sub-total {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface2); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    }
+    .sub-total-label  { font-size: 12px; color: var(--text-muted); }
+    .sub-total-amount { font-size: 22px; font-weight: 700; color: var(--text-bright); }
+
+    .sub-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .sub-empty { text-align: center; font-size: 13px; color: var(--text-muted); padding: 16px 0; }
+
+    .sub-item {
+      display: flex; align-items: center; background: var(--surface2);
+      border-radius: 12px; padding: 10px 12px; gap: 10px;
+    }
+    .sub-info    { flex: 1; min-width: 0; }
+    .sub-name    { font-size: 14px; font-weight: 600; color: var(--text-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sub-meta    { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .sub-right   { text-align: right; flex-shrink: 0; }
+    .sub-amount  { font-size: 15px; font-weight: 700; color: var(--success); }
+    .sub-monthly { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    .add-form { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .form-row { display: flex; gap: 8px; }
+
+    /* ── Inputs & Select ── */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text-bright);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      min-width: 0;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text-muted); }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: opacity(0.5); }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a9070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+    /* ── Buttons ── */
+    .btn {
+      border: none; border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap; flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.65; }
+    .btn-primary { background: var(--accent-dim); color: #f4f9f6; }
+    .btn-purple  { background: var(--purple-dim); color: #f4f2fa; }
+    .btn-success { background: #e8f4ec; color: var(--success); border: 1px solid #a0c8a8; }
+    .btn-today   { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-icon    { background: transparent; color: var(--danger); font-size: 18px; padding: 6px 8px; }
+    .btn-sm      { padding: 8px 10px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>マイダッシュボード</h1>
+    <div class="datetime" id="datetime"></div>
+  </div>
+
+  <div class="setup-banner" id="setup-banner" style="display:none">
+    ⚠️ スプレッドシート連携・電車情報を使うには <code>CONFIG.GAS_URL</code> を設定してください。
+  </div>
+
+  <!-- 天気カード -->
+  <div class="card">
+    <div class="card-title">☁️ 東京の天気</div>
+    <div id="weather-content"><div class="loading">取得中...</div></div>
+  </div>
+
+  <!-- 電車運行情報カード -->
+  <div class="card">
+    <div class="card-title">🚃 電車の運行情報</div>
+    <div id="train-content"><div class="loading">取得中...</div></div>
+  </div>
+
+  <!-- 散髪カウンターカード -->
+  <div class="card">
+    <div class="card-title">✂️ 散髪カウンター</div>
+    <div id="haircut-content"><div class="loading">読み込み中...</div></div>
+  </div>
+
+  <!-- サブスク管理カード -->
+  <div class="card">
+    <div class="card-title">💳 サブスク管理</div>
+    <div id="sub-content"><div class="loading">読み込み中...</div></div>
+  </div>
+
+<script>
+// ============================================================
+//  設定
+// ============================================================
+const CONFIG = {
+  GAS_URL:    'https://script.google.com/macros/s/AKfycbxt8agaa-J5_5x2edxOGG40kkz5Sg16FKtl0rA86ykGAxNDPw06dKQOwc93uUQkt04gsw/exec',
+  CUT_CYCLE:  42,
+  PERM_CYCLE: 90,
+};
+
+const FREQ_LABELS = { 1:'毎月', 2:'2ヶ月ごと', 3:'3ヶ月ごと', 6:'6ヶ月ごと', 12:'年1回' };
+const WEEKDAYS = ['日','月','火','水','木','金','土'];
+
+// ============================================================
+//  日時表示
+// ============================================================
+function updateDatetime() {
+  const d = new Date();
+  const s = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${WEEKDAYS[d.getDay()]}）`
+           + `　${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('datetime').textContent = s;
+}
+updateDatetime();
+setInterval(updateDatetime, 30000);
+
+// ============================================================
+//  天気 — Open-Meteo API
+// ============================================================
+const WMO = {
+  0:{label:'快晴',icon:'☀️'}, 1:{label:'ほぼ晴れ',icon:'🌤️'}, 2:{label:'一部曇り',icon:'⛅'},
+  3:{label:'曇り',icon:'☁️'}, 45:{label:'霧',icon:'🌫️'}, 48:{label:'霧氷',icon:'🌫️'},
+  51:{label:'霧雨',icon:'🌦️'}, 53:{label:'霧雨',icon:'🌦️'}, 55:{label:'強い霧雨',icon:'🌧️'},
+  61:{label:'小雨',icon:'🌦️'}, 63:{label:'雨',icon:'🌧️'}, 65:{label:'大雨',icon:'🌧️'},
+  71:{label:'小雪',icon:'🌨️'}, 73:{label:'雪',icon:'❄️'}, 75:{label:'大雪',icon:'❄️'},
+  77:{label:'あられ',icon:'🌨️'}, 80:{label:'にわか雨',icon:'🌦️'}, 81:{label:'にわか雨（強）',icon:'🌧️'},
+  82:{label:'激しいにわか雨',icon:'⛈️'}, 85:{label:'にわか雪',icon:'🌨️'}, 86:{label:'大雪',icon:'❄️'},
+  95:{label:'雷雨',icon:'⛈️'}, 96:{label:'雷雨（ひょう）',icon:'⛈️'}, 99:{label:'激しい雷雨',icon:'⛈️'},
+};
+function wmo(code) { return WMO[code] || {label:'不明', icon:'🌡️'}; }
+
+async function fetchWeather() {
+  const el = document.getElementById('weather-content');
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + '?latitude=35.6762&longitude=139.6503'
+      + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+      + '&timezone=Asia%2FTokyo&forecast_days=4&wind_speed_unit=ms';
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('API error');
+    const d = await res.json();
+    const cur = d.current, day = d.daily;
+    const info = wmo(cur.weather_code);
+
+    let fcHTML = '';
+    for (let i = 1; i <= 3; i++) {
+      const dt = new Date(day.time[i] + 'T00:00:00');
+      const fi = wmo(day.weather_code[i]);
+      fcHTML += `
+        <div class="fc-day">
+          <div class="fc-label">${WEEKDAYS[dt.getDay()]}曜</div>
+          <div class="fc-icon">${fi.icon}</div>
+          <div class="fc-temps">
+            <span class="fc-high">${Math.round(day.temperature_2m_max[i])}°</span>
+            <span class="fc-low"> ${Math.round(day.temperature_2m_min[i])}°</span>
+          </div>
+        </div>`;
+    }
+
+    el.innerHTML = `
+      <div class="weather-main">
+        <div>
+          <div class="weather-temp">${Math.round(cur.temperature_2m)}<sup>°C</sup></div>
+          <div class="weather-desc">${info.label}</div>
+          <div class="weather-feels">体感 ${Math.round(cur.apparent_temperature)}°C</div>
+        </div>
+        <div class="weather-icon">${info.icon}</div>
+      </div>
+      <div class="weather-details">
+        <div class="wd-item"><div class="wd-label">湿度</div><div class="wd-value">${cur.relative_humidity_2m}%</div></div>
+        <div class="wd-item"><div class="wd-label">風速</div><div class="wd-value">${cur.wind_speed_10m.toFixed(1)}<small style="font-size:10px;color:var(--text-muted)">m/s</small></div></div>
+        <div class="wd-item">
+          <div class="wd-label">最高 / 最低</div>
+          <div class="wd-value">
+            <span style="color:var(--warning)">${Math.round(day.temperature_2m_max[0])}°</span>
+            <span style="color:var(--accent);font-size:12px"> ${Math.round(day.temperature_2m_min[0])}°</span>
+          </div>
+        </div>
+      </div>
+      <div class="forecast">${fcHTML}</div>`;
+  } catch(e) {
+    el.innerHTML = '<div class="error-msg">天気情報を取得できませんでした</div>';
+  }
+}
+
+// ============================================================
+//  電車運行情報（GAS経由でYahoo!路線情報をスクレイピング）
+// ============================================================
+const TRAIN_LINES = [
+  { key: 'yamanote',   defaultName: '山手線',      always: true  },
+  { key: 'inokashira', defaultName: '京王井の頭線', always: true  },
+  { key: 'chuo',       defaultName: '中央線',      always: false },
+  { key: 'sobu',       defaultName: '総武線',      always: false },
+  { key: 'keio',       defaultName: '京王線',      always: false },
+  { key: 'odakyu',     defaultName: '小田急線',    always: false },
+];
+
+let trainExpanded = localStorage.getItem('trainExpanded') === 'true';
+let lastTrainData = null;
+
+async function fetchTrainStatus() {
+  const el = document.getElementById('train-content');
+  if (!CONFIG.GAS_URL) {
+    el.innerHTML = '<div class="error-msg" style="font-size:12px">GAS URLを設定すると表示されます</div>';
+    return;
+  }
+  if (!lastTrainData) el.innerHTML = '<div class="loading">取得中...</div>';
+  try {
+    lastTrainData = await gasRequest({ action: 'getTrainStatus' });
+    renderTrainStatus(lastTrainData);
+  } catch(e) {
+    el.innerHTML = '<div class="error-msg">取得できませんでした</div>';
+  }
+}
+
+function toggleTrainExpand() {
+  trainExpanded = !trainExpanded;
+  localStorage.setItem('trainExpanded', trainExpanded);
+  if (lastTrainData) renderTrainStatus(lastTrainData);
+}
+
+function renderTrainStatus(data) {
+  const el = document.getElementById('train-content');
+  if (data.error) {
+    el.innerHTML = `<div class="error-msg" style="font-size:12px">${esc(data.error)}</div>`;
+    return;
+  }
+
+  const trains = data.trains || {};
+  let updatedStr = '';
+  if (data.updatedAt) {
+    const d = new Date(data.updatedAt);
+    updatedStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} 更新`;
+  }
+
+  function trainItemHTML(line) {
+    const info = trains[line.key] || { name: line.defaultName, status: '平常通り運転', normal: true };
+    const dotColor    = info.normal ? 'var(--success)' : 'var(--danger)';
+    const statusColor = info.normal ? 'var(--text-muted)' : 'var(--danger)';
+    return `
+      <div class="train-item">
+        <div class="train-dot" style="background:${dotColor}"></div>
+        <div class="train-name">${esc(info.name)}</div>
+        <div class="train-status-text" style="color:${statusColor}">${esc(info.status)}</div>
+      </div>`;
+  }
+
+  const alwaysHTML   = TRAIN_LINES.filter(l =>  l.always).map(trainItemHTML).join('');
+  const optionalHTML = TRAIN_LINES.filter(l => !l.always).map(trainItemHTML).join('');
+
+  el.innerHTML = `
+    <div class="train-list">${alwaysHTML}</div>
+    <div class="train-toggle" onclick="toggleTrainExpand()">
+      <span>その他の路線</span>
+      <span class="train-toggle-arrow">${trainExpanded ? '▲' : '▼'}</span>
+    </div>
+    <div class="train-optional" style="display:${trainExpanded ? 'flex' : 'none'}">
+      ${optionalHTML}
+    </div>
+    <div class="train-footer">
+      <span class="train-updated">${updatedStr}</span>
+      <button class="btn btn-today btn-sm" onclick="fetchTrainStatus()">更新</button>
+    </div>`;
+}
+
+// 5分ごとに自動更新
+setInterval(fetchTrainStatus, 5 * 60 * 1000);
+
+// ============================================================
+//  散髪カウンター
+// ============================================================
+let cutDate  = null;
+let permDate = null;
+
+function buildTracker({ key, label, icon, accentClass, cycle, dateStr, inputId }) {
+  const accentColor = accentClass === 'btn-primary' ? 'var(--accent)' : 'var(--purple)';
+
+  if (!dateStr) {
+    return `
+      <div class="tracker">
+        <div class="tracker-header">
+          <div class="tracker-label" style="color:${accentColor}">${icon} ${label}</div>
+          <span class="tracker-cycle">${cycle}日サイクル</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">まだ登録されていません</div>
+        <div class="tracker-actions">
+          <button class="btn ${accentClass} btn-sm" onclick="saveTrackerDate('${key}','${toDateStr(new Date())}')">今日やった</button>
+          <input type="date" id="${inputId}" value="${toDateStr(new Date())}" style="background:var(--surface)">
+          <button class="btn btn-today btn-sm" onclick="saveTrackerDate('${key}',document.getElementById('${inputId}').value)">登録</button>
+        </div>
+      </div>`;
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const last  = new Date(dateStr + 'T00:00:00');
+  const days  = Math.floor((today - last) / 86400000);
+  const pct   = Math.min(days / cycle * 100, 100);
+  const left  = Math.max(cycle - days, 0);
+  const nextDate  = new Date(last.getTime() + cycle * 86400000);
+  const barColor  = pct < 55 ? 'var(--success)' : pct < 85 ? 'var(--warning)' : 'var(--danger)';
+  const remaining = left > 0
+    ? `あと <strong style="color:${barColor}">${left}日</strong>`
+    : `<strong style="color:var(--danger)">時期です！</strong>`;
+
+  return `
+    <div class="tracker">
+      <div class="tracker-header">
+        <div class="tracker-label" style="color:${accentColor}">${icon} ${label}</div>
+        <span class="tracker-cycle">${cycle}日サイクル</span>
+      </div>
+      <div class="tracker-body">
+        <div>
+          <div class="tracker-days">${days}<span>日</span></div>
+          <div class="tracker-last">最終: ${fmtDate(last)}</div>
+        </div>
+        <div class="tracker-right">
+          <div class="tracker-remaining">${remaining}</div>
+          <div class="tracker-next">次回目安: ${fmtDate(nextDate)}</div>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <div class="progress-labels">
+        <span>0日</span><span>${Math.round(pct)}%</span><span>${cycle}日</span>
+      </div>
+      <div class="tracker-actions">
+        <button class="btn ${accentClass} btn-sm" onclick="saveTrackerDate('${key}','${toDateStr(new Date())}')">今日やった</button>
+        <input type="date" id="${inputId}" value="${dateStr}" style="background:var(--surface)">
+        <button class="btn btn-today btn-sm" onclick="saveTrackerDate('${key}',document.getElementById('${inputId}').value)">変更</button>
+      </div>
+    </div>`;
+}
+
+function renderHaircut() {
+  document.getElementById('haircut-content').innerHTML =
+    buildTracker({ key:'cut',  label:'カット', icon:'✂️', accentClass:'btn-primary', cycle:CONFIG.CUT_CYCLE,  dateStr:cutDate,  inputId:'cut-date-input' }) +
+    buildTracker({ key:'perm', label:'パーマ', icon:'💜', accentClass:'btn-purple',  cycle:CONFIG.PERM_CYCLE, dateStr:permDate, inputId:'perm-date-input' });
+}
+
+async function saveTrackerDate(key, val) {
+  if (!val) return;
+  if (key === 'cut')  { cutDate  = val; localStorage.setItem('cutDate',  val); }
+  if (key === 'perm') { permDate = val; localStorage.setItem('permDate', val); }
+  renderHaircut();
+  if (!CONFIG.GAS_URL) return;
+  try { await gasRequest({ action: 'updateTrackerDate', key, date: val }); } catch(e) {}
+}
+
+// ============================================================
+//  サブスク管理
+// ============================================================
+let subscriptions = [];
+
+function renderSubscriptions() {
+  const el = document.getElementById('sub-content');
+  // 月換算合計 = Σ(金額 / 頻度)
+  const monthlyTotal = subscriptions.reduce((s, x) => s + Number(x.amount) / (Number(x.frequency) || 1), 0);
+
+  let listHTML = '';
+  if (subscriptions.length === 0) {
+    listHTML = '<div class="sub-empty">サブスクを追加してください</div>';
+  } else {
+    subscriptions.forEach((s, i) => {
+      const freq     = Number(s.frequency) || 1;
+      const freqLabel = FREQ_LABELS[freq] || `${freq}ヶ月ごと`;
+      const bd        = s.billingDate ? `${s.billingDate}日引落` : '引落日未設定';
+      const meta      = freq === 1 ? `毎月 ${bd}` : `${bd}・${freqLabel}`;
+      const monthly   = freq > 1
+        ? `<div class="sub-monthly">月換算 ¥${Math.round(Number(s.amount) / freq).toLocaleString()}</div>`
+        : '';
+
+      listHTML += `
+        <div class="sub-item">
+          <div class="sub-info">
+            <div class="sub-name">${esc(s.name)}</div>
+            <div class="sub-meta">${meta}</div>
+          </div>
+          <div class="sub-right">
+            <div class="sub-amount">¥${Number(s.amount).toLocaleString()}</div>
+            ${monthly}
+          </div>
+          <button class="btn btn-icon" onclick="deleteSub(${i})">🗑</button>
+        </div>`;
+    });
+  }
+
+  el.innerHTML = `
+    <div class="sub-total">
+      <div class="sub-total-label">月換算合計</div>
+      <div class="sub-total-amount">¥${Math.round(monthlyTotal).toLocaleString()}</div>
+    </div>
+    <div class="sub-list">${listHTML}</div>
+    <div class="add-form">
+      <input type="text" id="sub-name" placeholder="サービス名（例：Netflix）" maxlength="50">
+      <div class="form-row">
+        <input type="number" id="sub-amount" placeholder="金額（円）" min="0" step="1">
+        <select id="sub-freq" style="max-width:130px;flex:0 0 130px">
+          <option value="1">毎月</option>
+          <option value="2">2ヶ月ごと</option>
+          <option value="3">3ヶ月ごと</option>
+          <option value="6">6ヶ月ごと</option>
+          <option value="12">年1回</option>
+        </select>
+      </div>
+      <input type="number" id="sub-billing" placeholder="引落日（例：15）" min="1" max="31">
+      <button class="btn btn-success" onclick="addSub()">＋ サブスクを追加</button>
+    </div>`;
+}
+
+async function addSub() {
+  const name    = document.getElementById('sub-name').value.trim();
+  const amount  = Number(document.getElementById('sub-amount').value);
+  const freq    = Number(document.getElementById('sub-freq').value) || 1;
+  const billing = document.getElementById('sub-billing').value;
+
+  if (!name)   { alert('サービス名を入力してください'); return; }
+  if (!amount) { alert('金額を入力してください'); return; }
+
+  const item = { name, amount, frequency: freq, billingDate: billing || '' };
+  subscriptions.push(item);
+  saveSubsLocal();
+  renderSubscriptions();
+
+  if (!CONFIG.GAS_URL) return;
+  try { await gasRequest({ action: 'addSubscription', ...item }); } catch(e) {}
+}
+
+async function deleteSub(index) {
+  if (!confirm(`「${subscriptions[index].name}」を削除しますか？`)) return;
+  subscriptions.splice(index, 1);
+  saveSubsLocal();
+  renderSubscriptions();
+
+  if (!CONFIG.GAS_URL) return;
+  try { await gasRequest({ action: 'deleteSubscription', index }); } catch(e) {}
+}
+
+// ============================================================
+//  Google Apps Script 連携
+// ============================================================
+async function gasRequest(params) {
+  const qs = Object.entries(params)
+    .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  const res = await fetch(`${CONFIG.GAS_URL}?${qs}`);
+  return res.json();
+}
+
+// ============================================================
+//  データ読み込み
+// ============================================================
+async function loadData() {
+  cutDate       = localStorage.getItem('cutDate')  || null;
+  permDate      = localStorage.getItem('permDate') || null;
+  subscriptions = loadSubsLocal();
+  renderHaircut();
+  renderSubscriptions();
+
+  if (!CONFIG.GAS_URL) return;
+  try {
+    const d = await gasRequest({ action: 'getData' });
+    if (d.cutDate)       cutDate       = d.cutDate;
+    if (d.permDate)      permDate      = d.permDate;
+    if (d.subscriptions) subscriptions = d.subscriptions;
+    renderHaircut();
+    renderSubscriptions();
+  } catch(e) {}
+}
+
+// ============================================================
+//  ユーティリティ
+// ============================================================
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(d) {
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function loadSubsLocal() {
+  try { return JSON.parse(localStorage.getItem('subscriptions') || '[]'); } catch { return []; }
+}
+function saveSubsLocal() {
+  localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+}
+
+// ============================================================
+//  初期化
+// ============================================================
+function init() {
+  if (!CONFIG.GAS_URL) document.getElementById('setup-banner').style.display = 'block';
+  fetchWeather();
+  fetchTrainStatus();
+  loadData();
+}
+
+init();
+</script>
+
+</body>
+</html>
