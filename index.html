@@ -99,9 +99,9 @@
       background: var(--surface2); border-radius: 12px; padding: 10px 14px;
     }
     .train-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-    .train-item-info { flex: 1; min-width: 0; }
-    .train-name { font-size: 14px; font-weight: 600; color: var(--text-bright); }
-    .train-status-text { font-size: 12px; font-weight: 500; margin-top: 2px; line-height: 1.5; }
+    .train-item-info { flex: 1; min-width: 0; overflow: visible; }
+    .train-name { font-size: 14px; font-weight: 600; color: var(--text-bright); white-space: nowrap; }
+    .train-status-text { font-size: 12px; font-weight: 500; margin-top: 2px; line-height: 1.5; white-space: normal; word-break: break-all; overflow-wrap: break-word; }
     .train-footer {
       display: flex; justify-content: space-between; align-items: center;
       padding-top: 8px; border-top: 1px solid var(--border);
