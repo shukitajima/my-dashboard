@@ -95,12 +95,13 @@
     /* ── Train Status ── */
     .train-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
     .train-item {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: flex-start; gap: 10px;
       background: var(--surface2); border-radius: 12px; padding: 10px 14px;
     }
-    .train-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .train-name { font-size: 14px; font-weight: 600; color: var(--text-bright); flex: 1; }
-    .train-status-text { font-size: 12px; font-weight: 500; text-align: right; }
+    .train-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .train-item-info { flex: 1; min-width: 0; }
+    .train-name { font-size: 14px; font-weight: 600; color: var(--text-bright); }
+    .train-status-text { font-size: 12px; font-weight: 500; margin-top: 2px; line-height: 1.5; }
     .train-footer {
       display: flex; justify-content: space-between; align-items: center;
       padding-top: 8px; border-top: 1px solid var(--border);
@@ -123,7 +124,16 @@
 
     .tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .tracker-label  { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
-    .tracker-cycle  { font-size: 11px; color: var(--text-muted); background: var(--surface); padding: 2px 7px; border-radius: 10px; }
+    .tracker-cycle  { font-size: 11px; color: var(--text-muted); background: var(--surface); padding: 2px 7px; border-radius: 10px; display: flex; align-items: center; gap: 3px; }
+    .tracker-cycle input[type="number"] {
+      width: 40px; background: transparent; border: none;
+      border-bottom: 1px dashed var(--border);
+      color: var(--text-muted); font-size: 11px; font-family: inherit;
+      text-align: center; padding: 0; outline: none;
+      -moz-appearance: textfield;
+    }
+    .tracker-cycle input::-webkit-inner-spin-button,
+    .tracker-cycle input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
     .tracker-body   { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
     .tracker-days   { font-size: 44px; font-weight: 300; color: var(--text-bright); line-height: 1; }
@@ -202,6 +212,27 @@
     .btn-today   { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
     .btn-icon    { background: transparent; color: var(--danger); font-size: 18px; padding: 6px 8px; }
     .btn-sm      { padding: 8px 10px; font-size: 12px; }
+
+    /* ── Note ── */
+    .note-block {
+      background: var(--surface2); border-radius: 12px;
+      padding: 12px; margin-bottom: 8px;
+    }
+    .note-block-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .note-date-label { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+    .note-block textarea {
+      width: 100%; min-height: 80px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px; color: var(--text-bright);
+      font-size: 14px; font-family: inherit; line-height: 1.6;
+      resize: none; outline: none;
+    }
+    .note-block textarea:focus { border-color: var(--accent); }
+    .note-block textarea::placeholder { color: var(--text-muted); }
+    .note-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .note-saved { font-size: 11px; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -237,6 +268,16 @@
   <div class="card">
     <div class="card-title">💳 サブスク管理</div>
     <div id="sub-content"><div class="loading">読み込み中...</div></div>
+  </div>
+
+  <!-- メモカード -->
+  <div class="card">
+    <div class="card-title">📝 メモ・やること</div>
+    <div id="note-blocks"></div>
+    <div class="note-footer">
+      <span class="note-saved" id="note-status"></span>
+      <button class="btn btn-success btn-sm" onclick="addNoteBlock()">＋ ブロックを追加</button>
+    </div>
   </div>
 
 <script>
@@ -392,8 +433,10 @@ function renderTrainStatus(data) {
     return `
       <div class="train-item">
         <div class="train-dot" style="background:${dotColor}"></div>
-        <div class="train-name">${esc(info.name)}</div>
-        <div class="train-status-text" style="color:${statusColor}">${esc(info.status)}</div>
+        <div class="train-item-info">
+          <div class="train-name">${esc(info.name)}</div>
+          <div class="train-status-text" style="color:${statusColor}">${esc(info.status)}</div>
+        </div>
       </div>`;
   }
 
@@ -423,6 +466,14 @@ setInterval(fetchTrainStatus, 5 * 60 * 1000);
 // ============================================================
 let cutDate  = null;
 let permDate = null;
+let cutCycle, permCycle;
+
+function updateCycle(key, val) {
+  const v = Math.max(1, Math.min(365, parseInt(val) || 1));
+  if (key === 'cut')  { cutCycle  = v; localStorage.setItem('cutCycle',  v); }
+  if (key === 'perm') { permCycle = v; localStorage.setItem('permCycle', v); }
+  renderHaircut();
+}
 
 function buildTracker({ key, label, icon, accentClass, cycle, dateStr, inputId }) {
   const accentColor = accentClass === 'btn-primary' ? 'var(--accent)' : 'var(--purple)';
@@ -432,7 +483,7 @@ function buildTracker({ key, label, icon, accentClass, cycle, dateStr, inputId }
       <div class="tracker">
         <div class="tracker-header">
           <div class="tracker-label" style="color:${accentColor}">${icon} ${label}</div>
-          <span class="tracker-cycle">${cycle}日サイクル</span>
+          <span class="tracker-cycle"><input type="number" value="${cycle}" min="1" max="365" onchange="updateCycle('${key}',this.value)" onclick="event.stopPropagation()">日サイクル</span>
         </div>
         <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">まだ登録されていません</div>
         <div class="tracker-actions">
@@ -458,7 +509,7 @@ function buildTracker({ key, label, icon, accentClass, cycle, dateStr, inputId }
     <div class="tracker">
       <div class="tracker-header">
         <div class="tracker-label" style="color:${accentColor}">${icon} ${label}</div>
-        <span class="tracker-cycle">${cycle}日サイクル</span>
+        <span class="tracker-cycle"><input type="number" value="${cycle}" min="1" max="365" onchange="updateCycle('${key}',this.value)" onclick="event.stopPropagation()">日サイクル</span>
       </div>
       <div class="tracker-body">
         <div>
@@ -486,8 +537,8 @@ function buildTracker({ key, label, icon, accentClass, cycle, dateStr, inputId }
 
 function renderHaircut() {
   document.getElementById('haircut-content').innerHTML =
-    buildTracker({ key:'cut',  label:'カット', icon:'✂️', accentClass:'btn-primary', cycle:CONFIG.CUT_CYCLE,  dateStr:cutDate,  inputId:'cut-date-input' }) +
-    buildTracker({ key:'perm', label:'パーマ', icon:'💜', accentClass:'btn-purple',  cycle:CONFIG.PERM_CYCLE, dateStr:permDate, inputId:'perm-date-input' });
+    buildTracker({ key:'cut',  label:'カット', icon:'✂️', accentClass:'btn-primary', cycle:cutCycle,  dateStr:cutDate,  inputId:'cut-date-input' }) +
+    buildTracker({ key:'perm', label:'パーマ', icon:'💜', accentClass:'btn-purple',  cycle:permCycle, dateStr:permDate, inputId:'perm-date-input' });
 }
 
 async function saveTrackerDate(key, val) {
@@ -603,8 +654,10 @@ async function gasRequest(params) {
 //  データ読み込み
 // ============================================================
 async function loadData() {
-  cutDate       = localStorage.getItem('cutDate')  || null;
-  permDate      = localStorage.getItem('permDate') || null;
+  cutDate       = localStorage.getItem('cutDate')   || null;
+  permDate      = localStorage.getItem('permDate')  || null;
+  cutCycle      = parseInt(localStorage.getItem('cutCycle'))  || CONFIG.CUT_CYCLE;
+  permCycle     = parseInt(localStorage.getItem('permCycle')) || CONFIG.PERM_CYCLE;
   subscriptions = loadSubsLocal();
   renderHaircut();
   renderSubscriptions();
@@ -642,11 +695,100 @@ function saveSubsLocal() {
 // ============================================================
 //  初期化
 // ============================================================
+// ============================================================
+//  メモ（ブロック形式）
+// ============================================================
+let notes = []; // [{date, text}]
+let noteTimer = null;
+
+function renderNotes() {
+  const el = document.getElementById('note-blocks');
+  if (notes.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:12px 0">ブロックを追加してください</div>';
+    return;
+  }
+  el.innerHTML = notes.map((n, i) => `
+    <div class="note-block">
+      <div class="note-block-header">
+        <span class="note-date-label">入力日</span>
+        <input type="date" value="${esc(n.date)}" onchange="updateNoteDate(${i}, this.value)" style="flex:1;background:var(--surface)">
+        <button class="btn btn-icon" onclick="deleteNoteBlock(${i})">🗑</button>
+      </div>
+      <textarea placeholder="内容を入力…" oninput="updateNoteText(${i}, this.value)">${esc(n.text)}</textarea>
+    </div>`).join('');
+}
+
+function addNoteBlock() {
+  notes.unshift({ date: toDateStr(new Date()), text: '' });
+  renderNotes();
+  scheduleNoteSave();
+}
+
+function deleteNoteBlock(index) {
+  if (!confirm('このブロックを削除しますか？')) return;
+  notes.splice(index, 1);
+  renderNotes();
+  scheduleNoteSave();
+}
+
+function updateNoteDate(index, val) {
+  notes[index].date = val;
+  scheduleNoteSave();
+}
+
+function updateNoteText(index, val) {
+  notes[index].text = val;
+  scheduleNoteSave();
+}
+
+function scheduleNoteSave() {
+  clearTimeout(noteTimer);
+  document.getElementById('note-status').textContent = '入力中…';
+  noteTimer = setTimeout(saveNotes, 1000);
+}
+
+async function saveNotes() {
+  localStorage.setItem('notes', JSON.stringify(notes));
+  document.getElementById('note-status').textContent = '保存済み ✓';
+  if (!CONFIG.GAS_URL) return;
+  try {
+    await gasRequest({ action: 'saveNote', text: JSON.stringify(notes) });
+  } catch(e) {}
+}
+
+function loadNote() {
+  try {
+    const saved = localStorage.getItem('notes');
+    notes = saved ? JSON.parse(saved) : [];
+  } catch { notes = []; }
+  renderNotes();
+}
+
+async function loadNoteFromGas() {
+  if (!CONFIG.GAS_URL) return;
+  try {
+    const d = await gasRequest({ action: 'getNote' });
+    if (d.text) {
+      const parsed = JSON.parse(d.text);
+      if (Array.isArray(parsed)) {
+        notes = parsed;
+        localStorage.setItem('notes', d.text);
+        renderNotes();
+      }
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+//  初期化
+// ============================================================
 function init() {
   if (!CONFIG.GAS_URL) document.getElementById('setup-banner').style.display = 'block';
   fetchWeather();
   fetchTrainStatus();
   loadData();
+  loadNote();
+  loadNoteFromGas();
 }
 
 init();
