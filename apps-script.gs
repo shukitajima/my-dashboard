@@ -77,7 +77,7 @@ function doGet(e) {
     else if (action === 'getTrainStatus') {
       // 5分キャッシュ（Yahoo!路線情報への過剰アクセス防止）
       const cache    = CacheService.getScriptCache();
-      const cacheKey = 'train_status_v3';
+      const cacheKey = 'train_status_v4';
       const cached   = cache.get(cacheKey);
       if (cached) {
         out.setContent(cached);
@@ -121,10 +121,14 @@ function doGet(e) {
         var hasIssue = /遅延|見合わせ|運休|障害|乱れ/.test(text);
 
         if (!hasIssue) {
-          trains[t.key] = { name: t.name, status: '平常通り運転', normal: true };
+          trains[t.key] = { name: t.name, status: '遅延情報なし', normal: true };
         } else {
-          var issueMatch = text.match(/(遅延[^。]{0,100}|見合わせ[^。]{0,100}|運休[^。]{0,100})/);
-          var statusText = issueMatch ? issueMatch[0].trim() : '運行に乱れあり';
+          // 分数を抽出できればそれを優先
+          var minuteMatch = text.match(/(\d+)\s*分[程度]*遅[延れ]/);
+          var statusText = minuteMatch ? '約' + minuteMatch[1] + '分遅延' : '遅延あり';
+          // 運転見合わせ・運休を優先
+          if (/見合わせ/.test(text)) statusText = '運転見合わせ';
+          if (/運休/.test(text))    statusText = '運休';
           trains[t.key] = { name: t.name, status: statusText, normal: false };
         }
       });

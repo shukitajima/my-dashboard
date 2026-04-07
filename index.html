@@ -428,8 +428,8 @@ function renderTrainStatus(data) {
 
   function trainItemHTML(line) {
     const info = trains[line.key] || { name: line.defaultName, status: '平常通り運転', normal: true };
-    const dotColor    = info.normal ? 'var(--success)' : 'var(--danger)';
-    const statusColor = info.normal ? 'var(--text-muted)' : 'var(--danger)';
+    const dotColor    = info.normal ? 'var(--success)' : 'var(--warning)';
+    const statusColor = info.normal ? 'var(--text-muted)' : 'var(--warning)';
     return `
       <div class="train-item">
         <div class="train-dot" style="background:${dotColor}"></div>
