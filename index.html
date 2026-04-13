@@ -52,16 +52,16 @@
       text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
     }
 
-    /* ── Setup Banner ── */
-    .setup-banner {
-      background: #fdf6e3; border: 1px solid var(--warning);
-      border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
-      font-size: 13px; color: #7a5a18; line-height: 1.6;
+    /* ── Setup Screen ── */
+    .setup-screen {
+      background: var(--surface); border: 1px solid var(--warning);
+      border-radius: 18px; padding: 20px; margin-bottom: 16px;
     }
-    .setup-banner code {
-      font-family: monospace; background: rgba(255,255,255,0.1);
-      padding: 1px 4px; border-radius: 3px;
-    }
+    .setup-screen h2 { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-bottom: 6px; }
+    .setup-screen p  { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6; }
+    .setup-screen label { font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .setup-screen input { margin-bottom: 10px; }
+    .setup-error { font-size: 12px; color: var(--danger); margin-top: 6px; min-height: 16px; }
 
     /* ── Loading / Error ── */
     .loading, .error-msg { text-align: center; padding: 16px; font-size: 13px; }
@@ -242,8 +242,16 @@
     <div class="datetime" id="datetime"></div>
   </div>
 
-  <div class="setup-banner" id="setup-banner" style="display:none">
-    ⚠️ スプレッドシート連携・電車情報を使うには <code>CONFIG.GAS_URL</code> を設定してください。
+  <!-- 初回設定画面 -->
+  <div class="setup-screen" id="setup-screen" style="display:none">
+    <h2>⚙️ 初回設定</h2>
+    <p>スプレッドシート連携・電車情報を使うには GAS の情報を入力してください。<br>設定はこのデバイスに保存され、次回以降は表示されません。</p>
+    <label>GAS URL</label>
+    <input type="text" id="setup-gas-url" placeholder="https://script.google.com/macros/s/..." autocomplete="off">
+    <label>シークレットトークン</label>
+    <input type="text" id="setup-token" placeholder="GASのスクリプトプロパティに設定した値" autocomplete="off">
+    <div class="setup-error" id="setup-error"></div>
+    <button class="btn btn-primary" onclick="saveSetup()">保存して続ける</button>
   </div>
 
   <!-- 天気カード -->
@@ -285,7 +293,8 @@
 //  設定
 // ============================================================
 const CONFIG = {
-  GAS_URL:    'https://script.google.com/macros/s/AKfycbxt8agaa-J5_5x2edxOGG40kkz5Sg16FKtl0rA86ykGAxNDPw06dKQOwc93uUQkt04gsw/exec',
+  GAS_URL:    localStorage.getItem('gasUrl')   || '',
+  TOKEN:      localStorage.getItem('gasToken') || '',
   CUT_CYCLE:  42,
   PERM_CYCLE: 90,
 };
@@ -625,6 +634,12 @@ async function addSub() {
   saveSubsLocal();
   renderSubscriptions();
 
+  // フォームをリセット
+  document.getElementById('sub-name').value    = '';
+  document.getElementById('sub-amount').value  = '';
+  document.getElementById('sub-billing').value = '';
+  document.getElementById('sub-freq').value    = '1';
+
   if (!CONFIG.GAS_URL) return;
   try { await gasRequest({ action: 'addSubscription', ...item }); } catch(e) {}
 }
@@ -643,7 +658,8 @@ async function deleteSub(index) {
 //  Google Apps Script 連携
 // ============================================================
 async function gasRequest(params) {
-  const qs = Object.entries(params)
+  const allParams = CONFIG.TOKEN ? { ...params, token: CONFIG.TOKEN } : params;
+  const qs = Object.entries(allParams)
     .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
   const res = await fetch(`${CONFIG.GAS_URL}?${qs}`);
@@ -667,7 +683,7 @@ async function loadData() {
     const d = await gasRequest({ action: 'getData' });
     if (d.cutDate)       cutDate       = d.cutDate;
     if (d.permDate)      permDate      = d.permDate;
-    if (d.subscriptions) subscriptions = d.subscriptions;
+    if (d.subscriptions) { subscriptions = d.subscriptions; saveSubsLocal(); }
     renderHaircut();
     renderSubscriptions();
   } catch(e) {}
@@ -692,9 +708,6 @@ function saveSubsLocal() {
   localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
 }
 
-// ============================================================
-//  初期化
-// ============================================================
 // ============================================================
 //  メモ（ブロック形式）
 // ============================================================
@@ -780,10 +793,43 @@ async function loadNoteFromGas() {
 }
 
 // ============================================================
+//  初回設定
+// ============================================================
+function saveSetup() {
+  const url   = document.getElementById('setup-gas-url').value.trim();
+  const token = document.getElementById('setup-token').value.trim();
+  const errEl = document.getElementById('setup-error');
+
+  if (!url.startsWith('https://script.google.com/')) {
+    errEl.textContent = 'GAS URLの形式が正しくありません';
+    return;
+  }
+  if (!token) {
+    errEl.textContent = 'シークレットトークンを入力してください';
+    return;
+  }
+
+  localStorage.setItem('gasUrl',   url);
+  localStorage.setItem('gasToken', token);
+  CONFIG.GAS_URL = url;
+  CONFIG.TOKEN   = token;
+
+  document.getElementById('setup-screen').style.display = 'none';
+  startApp();
+}
+
+// ============================================================
 //  初期化
 // ============================================================
 function init() {
-  if (!CONFIG.GAS_URL) document.getElementById('setup-banner').style.display = 'block';
+  if (!CONFIG.GAS_URL || !CONFIG.TOKEN) {
+    document.getElementById('setup-screen').style.display = 'block';
+    return;
+  }
+  startApp();
+}
+
+function startApp() {
   fetchWeather();
   fetchTrainStatus();
   loadData();
