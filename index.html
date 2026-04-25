@@ -38,6 +38,12 @@
     .header { text-align: center; margin-bottom: 16px; }
     .header h1 { font-size: 20px; font-weight: 600; color: var(--text-bright); letter-spacing: 0.5px; }
     .header .datetime { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .header .sync-status {
+      font-size: 12px; margin-top: 6px; min-height: 18px;
+      color: var(--text-muted);
+    }
+    .header .sync-status.error { color: var(--danger); }
+    .header .sync-status.success { color: var(--success); }
 
     /* ── Card ── */
     .card {
@@ -240,6 +246,7 @@
   <div class="header">
     <h1>マイダッシュボード</h1>
     <div class="datetime" id="datetime"></div>
+    <div class="sync-status" id="sync-status"></div>
   </div>
 
   <!-- 初回設定画面 -->
@@ -592,7 +599,7 @@ function renderSubscriptions() {
             <div class="sub-amount">¥${Number(s.amount).toLocaleString()}</div>
             ${monthly}
           </div>
-          <button class="btn btn-icon" onclick="deleteSub(${i})">🗑</button>
+          <button class="btn btn-icon" onclick="deleteSub('${esc(s.id)}')">🗑</button>
         </div>`;
     });
   }
@@ -629,7 +636,7 @@ async function addSub() {
   if (!name)   { alert('サービス名を入力してください'); return; }
   if (!amount) { alert('金額を入力してください'); return; }
 
-  const item = { name, amount, frequency: freq, billingDate: billing || '' };
+  const item = { id: makeId(), name, amount, frequency: freq, billingDate: billing || '' };
   subscriptions.push(item);
   saveSubsLocal();
   renderSubscriptions();
@@ -641,17 +648,32 @@ async function addSub() {
   document.getElementById('sub-freq').value    = '1';
 
   if (!CONFIG.GAS_URL) return;
-  try { await gasRequest({ action: 'addSubscription', ...item }); } catch(e) {}
+  try {
+    await gasRequest({ action: 'addSubscription', ...item });
+    setSyncStatus('GASに同期しました', 'success');
+  } catch(e) {
+    setSyncStatus('ローカルには保存済みです。サブスクのGAS同期に失敗しました', 'error');
+  }
 }
 
-async function deleteSub(index) {
+async function deleteSub(id) {
+  const index = subscriptions.findIndex(s => s.id === id);
+  if (index < 0) {
+    setSyncStatus('削除対象のサブスクが見つかりませんでした', 'error');
+    return;
+  }
   if (!confirm(`「${subscriptions[index].name}」を削除しますか？`)) return;
   subscriptions.splice(index, 1);
   saveSubsLocal();
   renderSubscriptions();
 
   if (!CONFIG.GAS_URL) return;
-  try { await gasRequest({ action: 'deleteSubscription', index }); } catch(e) {}
+  try {
+    await gasRequest({ action: 'deleteSubscription', id });
+    setSyncStatus('GASに同期しました', 'success');
+  } catch(e) {
+    setSyncStatus('ローカルでは削除済みです。サブスク削除のGAS同期に失敗しました', 'error');
+  }
 }
 
 // ============================================================
@@ -663,7 +685,9 @@ async function gasRequest(params) {
     .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
   const res = await fetch(`${CONFIG.GAS_URL}?${qs}`);
-  return res.json();
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || 'request_failed');
+  return data;
 }
 
 // ============================================================
@@ -683,10 +707,13 @@ async function loadData() {
     const d = await gasRequest({ action: 'getData' });
     if (d.cutDate)       cutDate       = d.cutDate;
     if (d.permDate)      permDate      = d.permDate;
-    if (d.subscriptions) { subscriptions = d.subscriptions; saveSubsLocal(); }
+    if (d.subscriptions) { subscriptions = normalizeSubscriptions(d.subscriptions); saveSubsLocal(); }
     renderHaircut();
     renderSubscriptions();
-  } catch(e) {}
+    clearSyncStatus();
+  } catch(e) {
+    setSyncStatus('GASから読めなかったため、この端末の保存内容を表示しています', 'error');
+  }
 }
 
 // ============================================================
@@ -702,10 +729,31 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function loadSubsLocal() {
-  try { return JSON.parse(localStorage.getItem('subscriptions') || '[]'); } catch { return []; }
+  try { return normalizeSubscriptions(JSON.parse(localStorage.getItem('subscriptions') || '[]')); } catch { return []; }
 }
 function saveSubsLocal() {
   localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
+}
+function makeId() {
+  return `sub_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+}
+function normalizeSubscriptions(items) {
+  return (Array.isArray(items) ? items : []).map(item => ({
+    id: item && item.id ? String(item.id) : makeId(),
+    name: item && item.name ? String(item.name) : '',
+    amount: Number(item && item.amount) || 0,
+    billingDate: item && item.billingDate ? String(item.billingDate) : '',
+    frequency: Number(item && item.frequency) || 1,
+  }));
+}
+function setSyncStatus(message, type = '') {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = message || '';
+  el.className = `sync-status${type ? ` ${type}` : ''}`;
+}
+function clearSyncStatus() {
+  setSyncStatus('');
 }
 
 // ============================================================
@@ -766,7 +814,10 @@ async function saveNotes() {
   if (!CONFIG.GAS_URL) return;
   try {
     await gasRequest({ action: 'saveNote', text: JSON.stringify(notes) });
-  } catch(e) {}
+    clearSyncStatus();
+  } catch(e) {
+    setSyncStatus('メモは端末に保存済みです。GAS同期に失敗しました', 'error');
+  }
 }
 
 function loadNote() {
@@ -789,7 +840,10 @@ async function loadNoteFromGas() {
         renderNotes();
       }
     }
-  } catch(e) {}
+    clearSyncStatus();
+  } catch(e) {
+    setSyncStatus('メモは端末内データを表示しています。GAS読み込みに失敗しました', 'error');
+  }
 }
 
 // ============================================================
