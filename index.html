@@ -180,6 +180,155 @@
     .add-form { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
     .form-row { display: flex; gap: 8px; }
 
+    /* ── Content Stats ── */
+    .content-summary {
+      display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .content-total-panel,
+    .content-side-panel,
+    .content-category-card,
+    .content-chart-panel {
+      background: var(--surface2);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .content-kicker {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;
+    }
+    .content-total-value {
+      font-size: 34px; font-weight: 700; line-height: 1; color: var(--text-bright);
+    }
+    .content-total-meta,
+    .content-side-value,
+    .content-side-meta,
+    .content-category-meta,
+    .content-chart-meta,
+    .content-empty {
+      color: var(--text-muted);
+    }
+    .content-total-meta { font-size: 12px; margin-top: 8px; }
+    .content-side-panel { display: flex; flex-direction: column; justify-content: space-between; }
+    .content-side-value { font-size: 22px; font-weight: 700; color: var(--text-bright); }
+    .content-side-meta,
+    .content-category-meta,
+    .content-chart-meta,
+    .content-empty { font-size: 11px; margin-top: 4px; }
+    .content-delta { font-weight: 700; }
+    .content-delta.up { color: var(--success); }
+    .content-delta.down { color: var(--danger); }
+    .content-delta.flat { color: var(--text-muted); }
+    .content-category-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+      margin-bottom: 12px;
+    }
+    .content-category-card { min-width: 0; }
+    .content-category-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;
+    }
+    .content-category-name {
+      font-size: 12px; font-weight: 700; color: var(--text-bright);
+      display: flex; align-items: center; gap: 8px;
+      min-width: 0;
+    }
+    .content-category-dot {
+      width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0;
+    }
+    .content-category-value {
+      font-size: 20px; font-weight: 700; color: var(--text-bright);
+    }
+    .content-category-progress {
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(122,144,112,0.18);
+    }
+    .content-target-row,
+    .content-link-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .content-target-row { margin-bottom: 8px; }
+    .content-target-label,
+    .content-progress-text,
+    .content-link-label {
+      font-size: 11px; color: var(--text-muted);
+    }
+    .content-target-input {
+      width: 92px !important;
+      flex: 0 0 92px !important;
+      padding: 7px 10px !important;
+      font-size: 12px !important;
+      text-align: right;
+      background: var(--surface) !important;
+    }
+    .content-progress-bar {
+      height: 8px; background: var(--surface);
+      border-radius: 999px; overflow: hidden; margin-bottom: 6px;
+    }
+    .content-progress-fill {
+      height: 100%; border-radius: 999px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+    .content-link-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 74px; text-decoration: none;
+    }
+    .content-chart-stack { display: flex; flex-direction: column; gap: 10px; }
+    .content-chart-title {
+      font-size: 12px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px;
+    }
+    .content-chart-svg {
+      width: 100%; height: auto; display: block;
+      background: linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.1));
+      border-radius: 12px;
+    }
+    .content-legend {
+      display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px;
+    }
+    .content-legend-item {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--text-muted);
+    }
+    .content-legend-swatch {
+      width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0;
+    }
+    .content-filter-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px;
+    }
+    .content-filter-chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .content-filter-chip.active {
+      color: var(--text-bright);
+      border-color: currentColor;
+      background: rgba(255,255,255,0.65);
+      font-weight: 700;
+    }
+    .content-control-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px;
+    }
+    .content-control-chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .content-control-chip.active {
+      color: var(--text-bright);
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.72);
+      font-weight: 700;
+    }
+
     /* ── Inputs & Select ── */
     input[type="text"],
     input[type="number"],
@@ -261,6 +410,16 @@
     <button class="btn btn-primary" onclick="saveSetup()">保存して続ける</button>
   </div>
 
+  <!-- メモカード -->
+  <div class="card">
+    <div class="card-title">📝 メモ・やること</div>
+    <div id="note-blocks"></div>
+    <div class="note-footer">
+      <span class="note-saved" id="note-status"></span>
+      <button class="btn btn-success btn-sm" onclick="addNoteBlock()">＋ ブロックを追加</button>
+    </div>
+  </div>
+
   <!-- 天気カード -->
   <div class="card">
     <div class="card-title">☁️ 東京の天気</div>
@@ -285,14 +444,10 @@
     <div id="sub-content"><div class="loading">読み込み中...</div></div>
   </div>
 
-  <!-- メモカード -->
+  <!-- コンテンツ状況カード -->
   <div class="card">
-    <div class="card-title">📝 メモ・やること</div>
-    <div id="note-blocks"></div>
-    <div class="note-footer">
-      <span class="note-saved" id="note-status"></span>
-      <button class="btn btn-success btn-sm" onclick="addNoteBlock()">＋ ブロックを追加</button>
-    </div>
+    <div class="card-title">📚 コンテンツ状況</div>
+    <div id="content-content"><div class="loading">読み込み中...</div></div>
   </div>
 
 <script>
@@ -308,6 +463,32 @@ const CONFIG = {
 
 const FREQ_LABELS = { 1:'毎月', 2:'2ヶ月ごと', 3:'3ヶ月ごと', 6:'6ヶ月ごと', 12:'年1回' };
 const WEEKDAYS = ['日','月','火','水','木','金','土'];
+const PREVIEW_MODE = new URLSearchParams(window.location.search).get('preview') === 'content-stats';
+const CONTENT_RANGE_OPTIONS = {
+  day: [
+    { value: 30, label: '30日' },
+    { value: 90, label: '90日' },
+    { value: 180, label: '180日' },
+  ],
+  week: [
+    { value: 12, label: '12週' },
+    { value: 24, label: '24週' },
+    { value: 52, label: '52週' },
+  ],
+  month: [
+    { value: 6, label: '6ヶ月' },
+    { value: 12, label: '12ヶ月' },
+    { value: 24, label: '24ヶ月' },
+  ],
+};
+const CONTENT_META = {
+  movie: { label: '映画', color: '#b56b57', url: 'https://filmarks.com/users/mashu61', service: 'Filmarks' },
+  drama: { label: 'ドラマ', color: '#5f8e7c', url: 'https://filmarks.com/users/mashu61', service: 'Filmarks' },
+  anime: { label: 'アニメ', color: '#d28b3f', url: 'https://filmarks.com/users/mashu61', service: 'Filmarks' },
+  game:  { label: 'ゲーム', color: '#5c79b5', url: 'https://plsdb.com/profile/G9wgwo1', service: 'PULSE' },
+  book:  { label: '本', color: '#8b6fb5', url: 'https://booklog.jp/users/mashu61', service: 'ブクログ' },
+  manga: { label: '漫画', color: '#c45f8b', url: 'https://anilist.co/user/mashu61/', service: 'AniList' },
+};
 
 // ============================================================
 //  日時表示
@@ -570,6 +751,10 @@ async function saveTrackerDate(key, val) {
 //  サブスク管理
 // ============================================================
 let subscriptions = [];
+let contentStats = null;
+let contentTargets = loadContentTargets();
+let contentChartFilters = loadContentChartFilters();
+let contentTimeframe = loadContentTimeframe();
 
 function renderSubscriptions() {
   const el = document.getElementById('sub-content');
@@ -624,6 +809,119 @@ function renderSubscriptions() {
       </div>
       <input type="number" id="sub-billing" placeholder="引落日（例：15）" min="1" max="31">
       <button class="btn btn-success" onclick="addSub()">＋ サブスクを追加</button>
+    </div>`;
+}
+
+// ============================================================
+//  コンテンツ状況
+// ============================================================
+function renderContentStats() {
+  const el = document.getElementById('content-content');
+  if (!CONFIG.GAS_URL && !PREVIEW_MODE) {
+    el.innerHTML = '<div class="error-msg" style="font-size:12px">GAS URLを設定すると表示されます</div>';
+    return;
+  }
+  if (contentStats === null) {
+    el.innerHTML = '<div class="loading">読み込み中...</div>';
+    return;
+  }
+  if (!contentStats || !contentStats.summary || !Array.isArray(contentStats.categories) || contentStats.categories.length === 0) {
+    el.innerHTML = '<div class="content-empty">対象シートが見つからないか、まだデータがありません</div>';
+    return;
+  }
+
+  const summary = contentStats.summary;
+  const categories = contentStats.categories;
+  const rawTimeline = Array.isArray(contentStats.timeline) ? contentStats.timeline : [];
+  const timeline = buildDisplayTimeline(rawTimeline, contentTimeframe);
+  const latestDate = summary.latestDate ? fmtShortDate(summary.latestDate) : '未取得';
+  const updatedAt = summary.latestFetchAt ? fmtTime(summary.latestFetchAt) : '';
+  const selectedChartCategories = getActiveContentChartCategories(categories);
+  const granularityHTML = [
+    { value: 'day', label: '日次' },
+    { value: 'week', label: '週次' },
+    { value: 'month', label: '月次' },
+  ].map(option => `<button class="content-control-chip${contentTimeframe.granularity === option.value ? ' active' : ''}" onclick="setContentGranularity('${option.value}')">${option.label}</button>`).join('');
+  const rangeHTML = (CONTENT_RANGE_OPTIONS[contentTimeframe.granularity] || []).map(option =>
+    `<button class="content-control-chip${contentTimeframe.range === option.value ? ' active' : ''}" onclick="setContentRange(${option.value})">${option.label}</button>`
+  ).join('');
+
+  const categoryHTML = categories.map(item => {
+    const meta = CONTENT_META[item.category] || { label: item.category, color: '#7a9070' };
+    const target = Number(contentTargets[item.category]) || 0;
+    const progress = target > 0 ? Math.min((Number(item.totalCount || 0) / target) * 100, 100) : 0;
+    const remaining = target > 0 ? Math.max(target - Number(item.totalCount || 0), 0) : 0;
+    const progressText = target > 0
+      ? `${Math.round(progress)}% ・ 残り ${remaining.toLocaleString()}`
+      : '目標未設定';
+    const linkHTML = meta.url
+      ? `<a class="btn btn-today btn-sm content-link-btn" href="${esc(meta.url)}" target="_blank" rel="noopener noreferrer">開く</a>`
+      : '<span class="content-link-label">URL未設定</span>';
+    return `
+      <div class="content-category-card">
+        <div class="content-category-head">
+          <div class="content-category-name">
+            <span class="content-category-dot" style="background:${meta.color}"></span>
+            <span>${esc(meta.label)}</span>
+          </div>
+          <span class="content-delta ${deltaClass(item.dailyDiff)}">${fmtSigned(item.dailyDiff)}</span>
+        </div>
+        <div class="content-category-value">${Number(item.totalCount || 0).toLocaleString()}</div>
+        <div class="content-category-meta">最新件数</div>
+        <div class="content-category-progress">
+          <div class="content-target-row">
+            <span class="content-target-label">年目標</span>
+            <input class="content-target-input" type="number" min="0" step="1" value="${target || ''}" placeholder="0" onchange="updateContentTarget('${esc(item.category)}', this.value)">
+          </div>
+          <div class="content-progress-bar">
+            <div class="content-progress-fill" style="width:${progress}%;background:${meta.color}"></div>
+          </div>
+          <div class="content-progress-text">${progressText}</div>
+          <div class="content-link-row" style="margin-top:10px">
+            <span class="content-link-label">${esc(meta.service || '')}</span>
+            ${linkHTML}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const filterHTML = categories.map(item => {
+    const meta = CONTENT_META[item.category] || { label: item.category, color: '#7a9070' };
+    const isActive = selectedChartCategories.some(selected => selected.category === item.category);
+    return `<button class="content-filter-chip${isActive ? ' active' : ''}" style="${isActive ? `color:${meta.color}` : ''}" onclick="toggleContentChartCategory('${esc(item.category)}')">${esc(meta.label)}</button>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="content-summary">
+      <div class="content-total-panel">
+        <div class="content-kicker">Total Registered</div>
+        <div class="content-total-value">${Number(summary.totalCount || 0).toLocaleString()}</div>
+        <div class="content-total-meta">
+          <span class="content-delta ${deltaClass(summary.totalDiff)}">${fmtSigned(summary.totalDiff)}</span>
+          <span> 前回集計比</span>
+        </div>
+      </div>
+      <div class="content-side-panel">
+        <div>
+          <div class="content-kicker">Latest</div>
+          <div class="content-side-value" style="font-size:16px">${latestDate}</div>
+          <div class="content-side-meta">${updatedAt ? `${updatedAt} 更新` : '更新時刻なし'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="content-category-grid">${categoryHTML}</div>
+    <div class="content-chart-stack">
+      <div class="content-chart-panel">
+        <div class="content-chart-title">総登録数の推移</div>
+        <div class="content-control-row">${granularityHTML}</div>
+        <div class="content-control-row">${rangeHTML}</div>
+        ${buildSingleLineChart(timeline, point => point.totalCount, 'var(--accent)', '総登録数')}
+      </div>
+      <div class="content-chart-panel">
+        <div class="content-chart-title">カテゴリ別の推移</div>
+        <div class="content-filter-row">${filterHTML}</div>
+        ${buildMultiLineChart(timeline, selectedChartCategories)}
+      </div>
     </div>`;
 }
 
@@ -699,19 +997,25 @@ async function loadData() {
   cutCycle      = parseInt(localStorage.getItem('cutCycle'))  || CONFIG.CUT_CYCLE;
   permCycle     = parseInt(localStorage.getItem('permCycle')) || CONFIG.PERM_CYCLE;
   subscriptions = loadSubsLocal();
+  contentStats  = PREVIEW_MODE ? getPreviewContentStats() : null;
   renderHaircut();
   renderSubscriptions();
+  renderContentStats();
 
-  if (!CONFIG.GAS_URL) return;
+  if (PREVIEW_MODE || !CONFIG.GAS_URL) return;
   try {
     const d = await gasRequest({ action: 'getData' });
     if (d.cutDate)       cutDate       = d.cutDate;
     if (d.permDate)      permDate      = d.permDate;
     if (d.subscriptions) { subscriptions = normalizeSubscriptions(d.subscriptions); saveSubsLocal(); }
+    contentStats = normalizeContentStats(d.contentStats);
     renderHaircut();
     renderSubscriptions();
+    renderContentStats();
     clearSyncStatus();
   } catch(e) {
+    contentStats = {};
+    renderContentStats();
     setSyncStatus('GASから読めなかったため、この端末の保存内容を表示しています', 'error');
   }
 }
@@ -725,6 +1029,28 @@ function toDateStr(d) {
 function fmtDate(d) {
   return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
 }
+function fmtShortDate(value) {
+  const d = value instanceof Date ? value : new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return String(value || '');
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+function fmtTime(value) {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function fmtSigned(value) {
+  const n = Number(value) || 0;
+  if (n > 0) return `+${n.toLocaleString()}`;
+  if (n < 0) return n.toLocaleString();
+  return '±0';
+}
+function deltaClass(value) {
+  const n = Number(value) || 0;
+  if (n > 0) return 'up';
+  if (n < 0) return 'down';
+  return 'flat';
+}
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -737,6 +1063,170 @@ function saveSubsLocal() {
 function makeId() {
   return `sub_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
+function loadContentTargets() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('contentTargets') || '{}');
+    return Object.fromEntries(
+      Object.entries(raw).map(([key, value]) => [String(key), Math.max(0, Number(value) || 0)])
+    );
+  } catch {
+    return {};
+  }
+}
+function loadContentChartFilters() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('contentChartFilters') || '[]');
+    return Array.isArray(raw) ? raw.map(value => String(value)) : [];
+  } catch {
+    return [];
+  }
+}
+function loadContentTimeframe() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('contentTimeframe') || '{}');
+    const granularity = ['day', 'week', 'month'].includes(raw.granularity) ? raw.granularity : 'day';
+    const validRanges = (CONTENT_RANGE_OPTIONS[granularity] || []).map(option => option.value);
+    const range = validRanges.includes(Number(raw.range)) ? Number(raw.range) : defaultContentRangeFor(granularity);
+    return { granularity, range };
+  } catch {
+    return { granularity: 'day', range: defaultContentRangeFor('day') };
+  }
+}
+function saveContentTargets() {
+  localStorage.setItem('contentTargets', JSON.stringify(contentTargets));
+}
+function saveContentChartFilters() {
+  localStorage.setItem('contentChartFilters', JSON.stringify(contentChartFilters));
+}
+function saveContentTimeframe() {
+  localStorage.setItem('contentTimeframe', JSON.stringify(contentTimeframe));
+}
+function updateContentTarget(category, value) {
+  const normalized = String(category || '');
+  const nextValue = Math.max(0, parseInt(value, 10) || 0);
+  if (!normalized) return;
+  if (nextValue > 0) contentTargets[normalized] = nextValue;
+  else delete contentTargets[normalized];
+  saveContentTargets();
+  renderContentStats();
+}
+function getActiveContentChartCategories(categories) {
+  const list = Array.isArray(categories) ? categories : [];
+  if (contentChartFilters.length === 0) return list;
+  const filtered = list.filter(item => contentChartFilters.includes(item.category));
+  return filtered.length > 0 ? filtered : list;
+}
+function toggleContentChartCategory(category) {
+  const normalized = String(category || '');
+  if (!normalized) return;
+
+  if (contentChartFilters.includes(normalized)) {
+    const next = contentChartFilters.filter(value => value !== normalized);
+    contentChartFilters = next;
+  } else {
+    contentChartFilters = [...contentChartFilters, normalized];
+  }
+
+  saveContentChartFilters();
+  renderContentStats();
+}
+function defaultContentRangeFor(granularity) {
+  if (granularity === 'week') return 24;
+  if (granularity === 'month') return 12;
+  return 90;
+}
+function setContentGranularity(granularity) {
+  if (!CONTENT_RANGE_OPTIONS[granularity]) return;
+  contentTimeframe = { granularity, range: defaultContentRangeFor(granularity) };
+  saveContentTimeframe();
+  renderContentStats();
+}
+function setContentRange(range) {
+  const numericRange = Number(range);
+  const validRanges = (CONTENT_RANGE_OPTIONS[contentTimeframe.granularity] || []).map(option => option.value);
+  if (!validRanges.includes(numericRange)) return;
+  contentTimeframe = { ...contentTimeframe, range: numericRange };
+  saveContentTimeframe();
+  renderContentStats();
+}
+function buildDisplayTimeline(timeline, timeframe) {
+  const source = Array.isArray(timeline) ? timeline : [];
+  if (source.length === 0) return [];
+
+  const granularity = timeframe && timeframe.granularity ? timeframe.granularity : 'day';
+  const range = Number(timeframe && timeframe.range) || defaultContentRangeFor(granularity);
+
+  if (granularity === 'day') {
+    return source.slice(-range).map(point => ({
+      ...point,
+      label: fmtShortDate(point.date),
+    }));
+  }
+
+  const buckets = [];
+  const bucketMap = {};
+
+  source.forEach(point => {
+    const date = parseDateOnly(point.date);
+    if (!date) return;
+    const bucketKey = granularity === 'week' ? getWeekKey(date) : getMonthKey(date);
+    if (!bucketMap[bucketKey]) {
+      bucketMap[bucketKey] = {
+        key: bucketKey,
+        date: point.date,
+        totalCount: Number(point.totalCount) || 0,
+        dailyDiff: Number(point.dailyDiff) || 0,
+        categories: point.categories || {},
+        bucketDate: date,
+      };
+      buckets.push(bucketMap[bucketKey]);
+    } else {
+      bucketMap[bucketKey] = {
+        ...bucketMap[bucketKey],
+        date: point.date,
+        totalCount: Number(point.totalCount) || 0,
+        dailyDiff: Number(point.dailyDiff) || 0,
+        categories: point.categories || {},
+        bucketDate: date,
+      };
+      buckets[buckets.length - 1] = bucketMap[bucketKey];
+    }
+  });
+
+  const sliced = buckets.slice(-range);
+  return sliced.map((point, idx) => {
+    const prev = idx > 0 ? sliced[idx - 1] : null;
+    return {
+      ...point,
+      dailyDiff: prev ? point.totalCount - prev.totalCount : 0,
+      label: granularity === 'week' ? formatWeekLabel(point.bucketDate) : formatMonthLabel(point.bucketDate),
+    };
+  });
+}
+function parseDateOnly(value) {
+  const text = String(value || '');
+  if (!text) return null;
+  const date = new Date(`${text}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+function getWeekKey(date) {
+  const base = new Date(date);
+  const day = base.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  base.setDate(base.getDate() + diff);
+  return `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, '0')}-${String(base.getDate()).padStart(2, '0')}`;
+}
+function getMonthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+function formatWeekLabel(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  return `${date.getMonth() + 1}/${date.getDate()}週`;
+}
+function formatMonthLabel(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
 function normalizeSubscriptions(items) {
   return (Array.isArray(items) ? items : []).map(item => ({
     id: item && item.id ? String(item.id) : makeId(),
@@ -745,6 +1235,151 @@ function normalizeSubscriptions(items) {
     billingDate: item && item.billingDate ? String(item.billingDate) : '',
     frequency: Number(item && item.frequency) || 1,
   }));
+}
+function normalizeContentStats(raw) {
+  if (!raw || typeof raw !== 'object') return {};
+  const categories = Array.isArray(raw.categories) ? raw.categories.map(item => ({
+    category: item && item.category ? String(item.category) : '',
+    totalCount: Number(item && item.totalCount) || 0,
+    dailyDiff: Number(item && item.dailyDiff) || 0,
+  })).filter(item => item.category) : [];
+  const timeline = Array.isArray(raw.timeline) ? raw.timeline.map(point => {
+    const sourceCategories = point && typeof point.categories === 'object' && point.categories ? point.categories : {};
+    const categoriesMap = Object.fromEntries(
+      Object.entries(sourceCategories).map(([key, value]) => [String(key), Number(value) || 0])
+    );
+    return {
+      date: point && point.date ? String(point.date) : '',
+      totalCount: Number(point && point.totalCount) || 0,
+      dailyDiff: Number(point && point.dailyDiff) || 0,
+      categories: categoriesMap,
+    };
+  }).filter(point => point.date) : [];
+
+  return {
+    summary: {
+      totalCount: Number(raw.summary && raw.summary.totalCount) || 0,
+      totalDiff: Number(raw.summary && raw.summary.totalDiff) || 0,
+      latestDate: raw.summary && raw.summary.latestDate ? String(raw.summary.latestDate) : '',
+      latestFetchAt: raw.summary && raw.summary.latestFetchAt ? String(raw.summary.latestFetchAt) : '',
+    },
+    categories,
+    timeline,
+  };
+}
+function buildSingleLineChart(timeline, valueGetter, color, label) {
+  if (!Array.isArray(timeline) || timeline.length < 2) {
+    return '<div class="content-chart-meta">推移を描くには2日分以上のデータが必要です</div>';
+  }
+
+  const width = 320;
+  const height = 156;
+  const padding = { top: 18, right: 12, bottom: 26, left: 12 };
+  const values = timeline.map(valueGetter).map(v => Number(v) || 0);
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = Math.max(max - min, 1);
+  const innerWidth = width - padding.left - padding.right;
+  const innerHeight = height - padding.top - padding.bottom;
+
+  const points = timeline.map((point, idx) => {
+    const x = padding.left + (innerWidth * idx / Math.max(timeline.length - 1, 1));
+    const y = padding.top + innerHeight - (((Number(valueGetter(point)) || 0) - min) / range) * innerHeight;
+    return { x, y, label: point.date };
+  });
+
+  const linePath = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+  const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(2)} ${(height - padding.bottom).toFixed(2)} L ${points[0].x.toFixed(2)} ${(height - padding.bottom).toFixed(2)} Z`;
+  const ticks = [
+    { x: points[0].x, label: timeline[0].label || fmtShortDate(timeline[0].date) },
+    { x: points[Math.floor((points.length - 1) / 2)].x, label: timeline[Math.floor((timeline.length - 1) / 2)].label || fmtShortDate(timeline[Math.floor((timeline.length - 1) / 2)].date) },
+    { x: points[points.length - 1].x, label: timeline[timeline.length - 1].label || fmtShortDate(timeline[timeline.length - 1].date) },
+  ];
+
+  return `
+    <svg class="content-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(label)}の推移">
+      <defs>
+        <linearGradient id="content-total-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.28"></stop>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0.02"></stop>
+        </linearGradient>
+      </defs>
+      <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="rgba(122,144,112,0.25)"></line>
+      <path d="${areaPath}" fill="url(#content-total-fill)"></path>
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="2.8" fill="${color}"></circle>`).join('')}
+      ${ticks.map(tick => `<text x="${tick.x.toFixed(2)}" y="${height - 8}" text-anchor="middle" fill="#7a9070" font-size="10">${esc(tick.label)}</text>`).join('')}
+    </svg>
+    <div class="content-chart-meta">${timeline[0].label || fmtShortDate(timeline[0].date)} から ${timeline[timeline.length - 1].label || fmtShortDate(timeline[timeline.length - 1].date)} までの推移</div>`;
+}
+function buildMultiLineChart(timeline, categories) {
+  if (!Array.isArray(timeline) || timeline.length < 2 || !Array.isArray(categories) || categories.length === 0) {
+    return '<div class="content-chart-meta">カテゴリ推移を描くには2日分以上のデータが必要です</div>';
+  }
+
+  const width = 320;
+  const height = 180;
+  const padding = { top: 18, right: 12, bottom: 26, left: 12 };
+  const innerWidth = width - padding.left - padding.right;
+  const innerHeight = height - padding.top - padding.bottom;
+  const allValues = timeline.flatMap(point => categories.map(item => Number(point.categories && point.categories[item.category]) || 0));
+  const max = Math.max(...allValues, 1);
+
+  const lines = categories.map(item => {
+    const meta = CONTENT_META[item.category] || { label: item.category, color: '#7a9070' };
+    const points = timeline.map((point, idx) => {
+      const value = Number(point.categories && point.categories[item.category]) || 0;
+      const x = padding.left + (innerWidth * idx / Math.max(timeline.length - 1, 1));
+      const y = padding.top + innerHeight - (value / max) * innerHeight;
+      return { x, y };
+    });
+    const path = points.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+    return { label: meta.label, color: meta.color, path };
+  });
+
+  const ticks = [
+    { x: padding.left, label: timeline[0].label || fmtShortDate(timeline[0].date) },
+    { x: padding.left + innerWidth / 2, label: timeline[Math.floor((timeline.length - 1) / 2)].label || fmtShortDate(timeline[Math.floor((timeline.length - 1) / 2)].date) },
+    { x: width - padding.right, label: timeline[timeline.length - 1].label || fmtShortDate(timeline[timeline.length - 1].date) },
+  ];
+
+  return `
+    <svg class="content-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="カテゴリ別推移">
+      <line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" stroke="rgba(122,144,112,0.25)"></line>
+      ${lines.map(line => `<path d="${line.path}" fill="none" stroke="${line.color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>`).join('')}
+      ${ticks.map(tick => `<text x="${tick.x.toFixed(2)}" y="${height - 8}" text-anchor="middle" fill="#7a9070" font-size="10">${esc(tick.label)}</text>`).join('')}
+    </svg>
+    <div class="content-legend">
+      ${lines.map(line => `<span class="content-legend-item"><span class="content-legend-swatch" style="background:${line.color}"></span>${esc(line.label)}</span>`).join('')}
+    </div>`;
+}
+function getPreviewContentStats() {
+  return {
+    summary: {
+      totalCount: 14562,
+      totalDiff: 84,
+      latestDate: '2026-04-26',
+      latestFetchAt: '2026-04-26T09:20:00+09:00',
+    },
+    categories: [
+      { category: 'movie', totalCount: 2310, dailyDiff: 9 },
+      { category: 'drama', totalCount: 1864, dailyDiff: 4 },
+      { category: 'anime', totalCount: 3248, dailyDiff: 21 },
+      { category: 'game', totalCount: 980, dailyDiff: -2 },
+      { category: 'book', totalCount: 2895, dailyDiff: 18 },
+      { category: 'manga', totalCount: 3265, dailyDiff: 34 },
+    ],
+    timeline: [
+      { date: '2026-04-19', totalCount: 14102, dailyDiff: 0, categories: { movie: 2280, drama: 1844, anime: 3160, game: 995, book: 2788, manga: 3035 } },
+      { date: '2026-04-20', totalCount: 14156, dailyDiff: 54, categories: { movie: 2284, drama: 1848, anime: 3174, game: 994, book: 2796, manga: 3060 } },
+      { date: '2026-04-21', totalCount: 14214, dailyDiff: 58, categories: { movie: 2289, drama: 1850, anime: 3188, game: 992, book: 2807, manga: 3088 } },
+      { date: '2026-04-22', totalCount: 14288, dailyDiff: 74, categories: { movie: 2292, drama: 1854, anime: 3207, game: 991, book: 2824, manga: 3120 } },
+      { date: '2026-04-23', totalCount: 14354, dailyDiff: 66, categories: { movie: 2298, drama: 1857, anime: 3224, game: 988, book: 2843, manga: 3144 } },
+      { date: '2026-04-24', totalCount: 14418, dailyDiff: 64, categories: { movie: 2301, drama: 1860, anime: 3231, game: 986, book: 2861, manga: 3179 } },
+      { date: '2026-04-25', totalCount: 14478, dailyDiff: 60, categories: { movie: 2307, drama: 1860, anime: 3242, game: 982, book: 2877, manga: 3210 } },
+      { date: '2026-04-26', totalCount: 14562, dailyDiff: 84, categories: { movie: 2310, drama: 1864, anime: 3248, game: 980, book: 2895, manga: 3265 } },
+    ],
+  };
 }
 function setSyncStatus(message, type = '') {
   const el = document.getElementById('sync-status');
