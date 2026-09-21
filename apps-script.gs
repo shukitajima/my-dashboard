@@ -211,6 +211,9 @@ function getContentStats_(ss) {
   const values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
   const dailySnapshots = {};
   const latestByKey = {};
+  const keyMeta = {};
+  const keyDates = {};
+  const allDatesSet = {};
 
   values.forEach(function(row) {
     const category = normalizeCategory_(row[index.category]);
@@ -240,22 +243,59 @@ function getContentStats_(ss) {
     if (!dailySnapshots[rowDate][key] || dailySnapshots[rowDate][key].timestamp < timestamp) {
       dailySnapshots[rowDate][key] = item;
     }
+
+    keyMeta[key] = { serviceId: serviceId, category: category };
+    keyDates[key] = keyDates[key] || {};
+    keyDates[key][rowDate] = true;
+    allDatesSet[rowDate] = true;
   });
 
-  const timeline = Object.keys(dailySnapshots).sort().map(function(dateKey) {
-    const categoryTotals = {};
-    let totalCount = 0;
+  const allDates = Object.keys(allDatesSet).sort();
+  if (!allDates.length) return null;
 
-    Object.keys(dailySnapshots[dateKey]).forEach(function(key) {
-      const item = dailySnapshots[dateKey][key];
-      categoryTotals[item.category] = (categoryTotals[item.category] || 0) + item.totalCount;
-      totalCount += item.totalCount;
+  // 各取得元×カテゴリが実際にデータを持つ期間 [min, max] を求める。
+  // その期間中に該当日の値が無ければ「その日だけ取得に失敗した」とみなし、
+  // 合計やカテゴリ値を欠測(null)として扱う（他が取れているのに合算で数値が下がるのを防ぐ）。
+  const keyRanges = {};
+  Object.keys(keyDates).forEach(function(key) {
+    const dates = Object.keys(keyDates[key]).sort();
+    keyRanges[key] = { min: dates[0], max: dates[dates.length - 1] };
+  });
+  const allKeys = Object.keys(keyMeta);
+
+  const timeline = allDates.map(function(dateKey) {
+    const snapshot = dailySnapshots[dateKey] || {};
+    const categoryTotals = {};
+    const categoryComplete = {};
+    let totalCount = 0;
+    let totalComplete = true;
+
+    allKeys.forEach(function(key) {
+      const range = keyRanges[key];
+      if (dateKey < range.min || dateKey > range.max) return; // まだ開始前 or 既に終了済みの取得元
+
+      const category = keyMeta[key].category;
+      if (!(category in categoryComplete)) categoryComplete[category] = true;
+
+      const entry = snapshot[key];
+      if (entry) {
+        categoryTotals[category] = (categoryTotals[category] || 0) + entry.totalCount;
+        totalCount += entry.totalCount;
+      } else {
+        categoryComplete[category] = false;
+        totalComplete = false;
+      }
+    });
+
+    const categoriesOut = {};
+    Object.keys(categoryComplete).forEach(function(category) {
+      categoriesOut[category] = categoryComplete[category] ? (categoryTotals[category] || 0) : null;
     });
 
     return {
       date: dateKey,
-      totalCount: totalCount,
-      categories: categoryTotals,
+      totalCount: totalComplete ? totalCount : null,
+      categories: categoriesOut,
     };
   });
 
@@ -263,17 +303,28 @@ function getContentStats_(ss) {
 
   timeline.forEach(function(point, idx) {
     const prev = idx > 0 ? timeline[idx - 1] : null;
-    point.dailyDiff = prev ? point.totalCount - prev.totalCount : 0;
+    if (!prev) {
+      point.dailyDiff = 0;
+    } else if (point.totalCount === null || prev.totalCount === null) {
+      point.dailyDiff = null;
+    } else {
+      point.dailyDiff = point.totalCount - prev.totalCount;
+    }
 
     const categoryDiffs = {};
     Object.keys(point.categories).forEach(function(category) {
-      const prevCount = prev && prev.categories[category] ? prev.categories[category] : 0;
-      categoryDiffs[category] = point.categories[category] - prevCount;
+      const curr = point.categories[category];
+      const prevVal = prev ? prev.categories[category] : undefined;
+      if (curr === null || prevVal === null) {
+        categoryDiffs[category] = null;
+      } else {
+        categoryDiffs[category] = curr - (prevVal || 0);
+      }
     });
     if (prev) {
       Object.keys(prev.categories).forEach(function(category) {
         if (!(category in point.categories)) {
-          categoryDiffs[category] = -prev.categories[category];
+          categoryDiffs[category] = (prev.categories[category] === null) ? null : -prev.categories[category];
         }
       });
     }

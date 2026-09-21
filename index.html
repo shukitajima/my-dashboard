@@ -1201,38 +1201,41 @@ function buildDisplayTimeline(timeline, timeframe) {
     const date = parseDateOnly(point.date);
     if (!date) return;
     const bucketKey = granularity === 'week' ? getWeekKey(date) : getMonthKey(date);
-    if (!bucketMap[bucketKey]) {
-      bucketMap[bucketKey] = {
-        key: bucketKey,
-        date: point.date,
-        totalCount: Number(point.totalCount) || 0,
-        dailyDiff: Number(point.dailyDiff) || 0,
-        categories: point.categories || {},
-        bucketDate: date,
-      };
-      buckets.push(bucketMap[bucketKey]);
-    } else {
-      bucketMap[bucketKey] = {
-        ...bucketMap[bucketKey],
-        date: point.date,
-        totalCount: Number(point.totalCount) || 0,
-        dailyDiff: Number(point.dailyDiff) || 0,
-        categories: point.categories || {},
-        bucketDate: date,
-      };
-      buckets[buckets.length - 1] = bucketMap[bucketKey];
-    }
+    const existing = bucketMap[bucketKey];
+    const totalValue = toChartValue(point.totalCount);
+    const next = {
+      key: bucketKey,
+      date: point.date,
+      // 欠測(取得失敗)日の値で、同じ週/月内の既知の値を上書きしないようにする
+      totalCount: totalValue !== null ? totalValue : (existing ? existing.totalCount : null),
+      categories: mergeContentCategories(existing && existing.categories, point.categories),
+      bucketDate: date,
+    };
+    bucketMap[bucketKey] = next;
+    if (!existing) buckets.push(next);
+    else buckets[buckets.length - 1] = next;
   });
 
   const sliced = buckets.slice(-range);
   return sliced.map((point, idx) => {
     const prev = idx > 0 ? sliced[idx - 1] : null;
+    const dailyDiff = (!prev || point.totalCount === null || prev.totalCount === null)
+      ? (prev ? null : 0)
+      : point.totalCount - prev.totalCount;
     return {
       ...point,
-      dailyDiff: prev ? point.totalCount - prev.totalCount : 0,
+      dailyDiff,
       label: granularity === 'week' ? formatWeekLabel(point.bucketDate) : formatMonthLabel(point.bucketDate),
     };
   });
+}
+function mergeContentCategories(existingCategories, incoming) {
+  const merged = Object.assign({}, existingCategories || {});
+  Object.entries(incoming || {}).forEach(([key, rawValue]) => {
+    const value = toChartValue(rawValue);
+    if (value !== null || !(key in merged)) merged[key] = value;
+  });
+  return merged;
 }
 function parseDateOnly(value) {
   const text = String(value || '');
@@ -1277,12 +1280,12 @@ function normalizeContentStats(raw) {
   const timeline = Array.isArray(raw.timeline) ? raw.timeline.map(point => {
     const sourceCategories = point && typeof point.categories === 'object' && point.categories ? point.categories : {};
     const categoriesMap = Object.fromEntries(
-      Object.entries(sourceCategories).map(([key, value]) => [String(key), Number(value) || 0])
+      Object.entries(sourceCategories).map(([key, value]) => [String(key), toChartValue(value)])
     );
     return {
       date: point && point.date ? String(point.date) : '',
-      totalCount: Number(point && point.totalCount) || 0,
-      dailyDiff: Number(point && point.dailyDiff) || 0,
+      totalCount: toChartValue(point && point.totalCount),
+      dailyDiff: toChartValue(point && point.dailyDiff),
       categories: categoriesMap,
     };
   }).filter(point => point.date) : [];
@@ -1395,14 +1398,20 @@ function buildMultiLineChart(timeline, categories) {
   const allValues = timeline
     .flatMap(point => categories.map(item => toChartValue(point.categories && point.categories[item.category])))
     .filter(v => v !== null);
-  const max = Math.max(...allValues, 1);
+  if (allValues.length === 0) {
+    return '<div class="content-chart-meta">選択したカテゴリのデータがありません</div>';
+  }
+  // 選択中のカテゴリの実際の値域に合わせて縦軸を決める（0固定だと変化が見えづらいため）
+  const max = Math.max(...allValues);
+  const min = Math.min(...allValues);
+  const range = Math.max(max - min, 1);
 
   const lines = categories.map(item => {
     const meta = CONTENT_META[item.category] || { label: item.category, color: '#7a9070' };
     const points = timeline.map((point, idx) => {
       const value = toChartValue(point.categories && point.categories[item.category]);
       const x = padding.left + (innerWidth * idx / Math.max(timeline.length - 1, 1));
-      const y = value === null ? null : padding.top + innerHeight - (value / max) * innerHeight;
+      const y = value === null ? null : padding.top + innerHeight - ((value - min) / range) * innerHeight;
       return { x, y };
     });
     const path = segmentsToPath(buildLineSegments(points));
@@ -1417,7 +1426,7 @@ function buildMultiLineChart(timeline, categories) {
   const yTickCount = 4;
   const yTicks = Array.from({ length: yTickCount }, (_, i) => {
     const ratio = i / (yTickCount - 1);
-    const value = max * (1 - ratio);
+    const value = max - (max - min) * ratio;
     const y = padding.top + innerHeight * ratio;
     return { y, value };
   });
