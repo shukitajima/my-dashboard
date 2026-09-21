@@ -263,6 +263,26 @@ function getContentStats_(ss) {
   });
   const allKeys = Object.keys(keyMeta);
 
+  // 行自体は存在するが、値が異常に落ち込んでその翌日には元の水準へ戻っている場合も
+  // スクレイピング失敗（ページ取得失敗などで誤った小さい値が記録された）とみなし、
+  // その日の値を除外する（前後の値と比べて明らかな一時的な谷になっているものだけを対象にする）。
+  const DIP_RATIO = 0.9;
+  Object.keys(keyDates).forEach(function(key) {
+    const dates = Object.keys(keyDates[key]).sort();
+    for (var i = 1; i < dates.length - 1; i++) {
+      const prevEntry = dailySnapshots[dates[i - 1]] && dailySnapshots[dates[i - 1]][key];
+      const currEntry = dailySnapshots[dates[i]] && dailySnapshots[dates[i]][key];
+      const nextEntry = dailySnapshots[dates[i + 1]] && dailySnapshots[dates[i + 1]][key];
+      if (!prevEntry || !currEntry || !nextEntry) continue;
+
+      const isDip = currEntry.totalCount < prevEntry.totalCount * DIP_RATIO
+        && currEntry.totalCount < nextEntry.totalCount * DIP_RATIO;
+      if (isDip) {
+        delete dailySnapshots[dates[i]][key];
+      }
+    }
+  });
+
   const timeline = allDates.map(function(dateKey) {
     const snapshot = dailySnapshots[dateKey] || {};
     const categoryTotals = {};
