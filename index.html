@@ -401,7 +401,7 @@
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px; padding: 10px; color: var(--text-bright);
       font-size: 14px; font-family: inherit; line-height: 1.6;
-      resize: none; outline: none;
+      resize: none; outline: none; overflow: hidden;
     }
     .note-block textarea:focus { border-color: var(--accent); }
     .note-block textarea::placeholder { color: var(--text-muted); }
@@ -1489,8 +1489,10 @@ function renderNotes() {
         <input type="date" value="${esc(n.date)}" onchange="updateNoteDate(${i}, this.value)" style="flex:1;background:var(--surface)">
         <button class="btn btn-icon" onclick="deleteNoteBlock(${i})">🗑</button>
       </div>
-      <textarea placeholder="内容を入力…" oninput="updateNoteText(${i}, this.value)">${esc(n.text)}</textarea>
+      <textarea placeholder="内容を入力…" oninput="updateNoteText(${i}, this.value); autoGrowTextarea(this)">${esc(n.text)}</textarea>
     </div>`).join('');
+
+  el.querySelectorAll('textarea').forEach(autoGrowTextarea);
 }
 
 function addNoteBlock() {
